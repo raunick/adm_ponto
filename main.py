@@ -145,4 +145,5 @@ col2.metric("Horas negativas", f'{dia_min_banco_horas["Data"]}', f'{dia_min_banc
 col3.metric("Total de horas", f'{horas_totais_trabalho}')
 # Relação de horas pelos dias
 st.write('## Relação de Horas pelos Dias:')
-st.bar_chart(df.set_index('Data')[['Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço']])
+st.line_chart(df.set_index('Data')[['Horas Trabalhadas']])
+st.line_chart(df.set_index('Data')[[ 'Banco de Horas']])
