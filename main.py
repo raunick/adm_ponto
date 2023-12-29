@@ -1,28 +1,13 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime ,timedelta
-import locale
 
-
-# Defina a localização para o Brasil
-locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
 df = pd.read_csv('data.csv')
-data_atual = datetime.now()
-formato_br = "%d/%m/%Y %H:%M:%S"
-data_formatada_br = data_atual.strftime(formato_br)
-
 
 st.table(df)
 '''
 # Relatorio do seu ponto da data atual:
 '''
-
-
-
-
-st.write(f'Data atual: {data_formatada_br}')
-
-
 def calcular_periodo_manha(entrada, almoco_saida):
     if pd.isnull(entrada) or pd.isnull(almoco_saida) or entrada == '-' or almoco_saida == '-':
         return ''
