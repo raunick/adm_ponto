@@ -3,13 +3,21 @@ import pandas as pd
 from datetime import datetime ,timedelta
 
 df = pd.read_csv('data.csv')
-
+data_atual = datetime.now()
+formato_br = "%d/%m/%Y %H:%M:%S"
+data_formatada_br = data_atual.strftime(formato_br)
 
 
 st.table(df)
 '''
 # Relatorio do seu ponto da data atual:
 '''
+
+
+
+
+st.write(f'Data atual: {data_formatada_br}')
+
 
 def calcular_periodo_manha(entrada, almoco_saida):
     if pd.isnull(entrada) or pd.isnull(almoco_saida) or entrada == '-' or almoco_saida == '-':
@@ -72,76 +80,15 @@ def calcular_banco_de_horas(df_row):
             jornada_diaria = pd.to_timedelta('00:00:00')  # Jornada de trabalho zero
         else:
             jornada_diaria = pd.to_timedelta('8:00:00')
-        
-        # Calcula o banco de horas
-        banco_de_horas_timedelta = total_horas_trabalhadas - jornada_diaria
-        # Converte para horas e minutos separadamente
-        horas = int(banco_de_horas_timedelta.total_seconds() // 3600)
-        minutos = int((banco_de_horas_timedelta.total_seconds() % 3600) // 60)
-        
-        return f'{horas}:{minutos}'
 
+        banco_de_horas = total_horas_trabalhadas - jornada_diaria
+        return str(banco_de_horas)
 
-def calcular_total_horas_banco(coluna_horas):
-    total_horas_trabalhadas = pd.to_timedelta('00:00:00')
-
-    for horas_str in coluna_horas:
-        if pd.notnull(horas_str):
-            horas, minutos = map(int, horas_str.split(':'))
-            total_horas_trabalhadas += pd.to_timedelta(f'{horas}:{minutos}:00')
-
-    # Converte para horas e minutos separadamente
-    horas = int(total_horas_trabalhadas.total_seconds() // 3600)
-    minutos = int((total_horas_trabalhadas.total_seconds() % 3600) // 60)
-
-    return pd.to_timedelta(f'{horas}h{minutos}m')
-
-def calcular_horas_positivas(coluna_horas):
-    total_horas_trabalhadas = pd.to_timedelta('00:00:00')
-
-    for horas_str in coluna_horas:
-        if pd.notnull(horas_str):
-            horas, minutos = map(int, horas_str.split(':'))
-            total_horas_trabalhadas += pd.to_timedelta(f'{horas}:{minutos}:00')
-
-    # Converte para horas e minutos separadamente
-    horas = int(total_horas_trabalhadas.total_seconds() // 3600)
-    minutos = int((total_horas_trabalhadas.total_seconds() % 3600) // 60)
-
-    return print(f'{horas}:{minutos}')
-
-# Função para calcular o total de horas e minutos
-def calcular_total_horas_trabalhadas(coluna_hora_trabalhada):
-    coluna_hora_trabalhada = pd.to_timedelta(df['Horas Trabalhadas'])
-    total_horas = coluna_hora_trabalhada.sum()
-    horas = int(total_horas.total_seconds() // 3600)
-    minutos = int((total_horas.total_seconds() % 3600) // 60)
-    # Formatar a coluna 'Tempo Convertido' como uma string no formato desejado
-    return pd.to_timedelta(f'{horas}h{minutos}m')
-
-
+    
 df['Relação de Horas Manhã'] = df.apply(lambda row: calcular_periodo_manha(row['Entrada'], row['Almoço Saída']), axis=1)
 df['Relação de Horas Tarde'] = df.apply(lambda row: calcular_periodo_manha(row['Almoço Entrada'], row['Saída']), axis=1)
 df['Relação de Horas Almoço'] = df.apply(lambda row: calcular_periodo_almoco(row['Almoço Entrada'], row['Almoço Saída']), axis=1)
 df['Horas Trabalhadas'] = df.apply(calcular_horas_trabalhadas, axis=1)
 df['Banco de Horas'] = df.apply(calcular_banco_de_horas, axis=1)
-relacao_horas_dias = df[['Data', 'Entrada', 'Almoço Saída', 'Almoço Entrada', 'Saída', 'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Horas Trabalhadas', 'Banco de Horas']]
-st.table(df[['Data', 'Entrada', 'Almoço Saída', 'Almoço Entrada', 'Saída', 'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Horas Trabalhadas', 'Banco de Horas']])
-# Card com o dia de maior banco de horas
-dia_max_banco_horas = df.loc[df['Banco de Horas'].idxmax()]
-
-# Card com o dia de menor banco de horas usando st.metric
-dia_min_banco_horas = df.loc[df['Banco de Horas'].idxmin()]
-
-# Card com as horas totais
-horas_totais_banco = calcular_total_horas_banco(df['Banco de Horas'])
-horas_totais_trabalho = calcular_total_horas_trabalhadas(df['Horas Trabalhadas'])
-
-col1, col2= st.columns(2)
-col1.metric("Total de horas trabalhas", f'{horas_totais_trabalho}',)
-col2.metric("Total de horas banco", f'{horas_totais_banco}',)
-# Relação de horas pelos dias
-st.write('## Relação de Horas pelos Dias:')
-st.line_chart(df.set_index('Data')[[ 'Banco de Horas']])
-
-print(horas_totais_banco)
+# Exiba o DataFrame original e a "Relação de Horas Manhã"
+st.table(df[['Data', 'Entrada', 'Almoço Saída', 'Almoço Entrada','Saída' ,'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Total de Horas Trabalhadas', 'Banco de Horas']])
