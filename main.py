@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 df = pd.read_csv('data.csv')
 
 # Exibir o DataFrame como uma tabela no Streamlit
-st.table(df)
+st.DataFrame(df)
 
 # Título para o relatório do ponto na data atual
 st.markdown('# Relatório do seu ponto na data atual:')
