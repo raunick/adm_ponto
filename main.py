@@ -83,7 +83,7 @@ def calcular_banco_de_horas(df_row):
         elif df_row['Dia da Semana'] == 'Feriado':
             jornada_diaria = pd.to_timedelta('00:00:00')
         else:
-            jornada_diaria = pd.to_timedelta('9:00:00')
+            jornada_diaria = pd.to_timedelta('10:00:00')
         banco_de_horas_timedelta = total_horas_trabalhadas - jornada_diaria
         horas = int(banco_de_horas_timedelta.total_seconds() // 3600)
         minutos = int((banco_de_horas_timedelta.total_seconds() % 3600) // 60)
