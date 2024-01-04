@@ -75,7 +75,7 @@ def calcular_banco_de_horas(df_row):
     else:
         total_horas_trabalhadas = pd.to_timedelta(df_row['Horas Trabalhadas'])
         if pd.to_datetime(df_row['Data']).weekday() == 4:
-            jornada_diaria = pd.to_timedelta('7:00:00')
+            jornada_diaria = pd.to_timedelta('9:00:00')
         elif pd.to_datetime(df_row['Data']).weekday() == 5:
             jornada_diaria = pd.to_timedelta('00:00:00')
         elif pd.to_datetime(df_row['Data']).weekday() == 6:
