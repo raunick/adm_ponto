@@ -85,8 +85,8 @@ def calcular_banco_de_horas(df_row):
         else:
             jornada_diaria = pd.to_timedelta('10:00:00')
         banco_de_horas_timedelta = total_horas_trabalhadas.total_seconds() - jornada_diaria.total_seconds()
-        horas = int(banco_de_horas_timedelta.total_seconds() // 3600)
-        minutos = int((banco_de_horas_timedelta.total_seconds() % 3600) // 60)
+        horas = float(banco_de_horas_timedelta.total_seconds() // 3600)
+        minutos = float((banco_de_horas_timedelta.total_seconds() % 3600) // 60)
         return f'{horas}:{minutos}'
 
 # Função para calcular o total de horas trabalhadas
