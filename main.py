@@ -80,6 +80,8 @@ def calcular_banco_de_horas(df_row):
             jornada_diaria = pd.to_timedelta('00:00:00')
         elif pd.to_datetime(df_row['Data']).weekday() == 6:
             jornada_diaria = pd.to_timedelta('00:00:00')
+        elif pd.to_datetime(df_row['Dia da Semana']) == 'Feriado':
+            jornada_diaria = pd.to_timedelta('00:00:00')
         else:
             jornada_diaria = pd.to_timedelta('8:00:00')
         banco_de_horas_timedelta = total_horas_trabalhadas - jornada_diaria
