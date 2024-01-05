@@ -150,7 +150,7 @@ if uploaded_file is not None:
     relacao_horas_dias = df[['Data', 'Dia da Semana','Entrada', 'Almoço Saída', 'Almoço Entrada', 'Saída', 'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Horas Trabalhadas', 'Banco de Horas']]
 
     # Exibir a tabela resultante no Streamlit
-    st.dataframe(relacao_horas_dias)
+    st.data_editor(relacao_horas_dias)
 
 
     # Calcular o total de horas no banco de horas e de trabalho
