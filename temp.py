@@ -111,6 +111,12 @@ def calcular_total_horas_banco(coluna_horas):
 
     return f'{horas}h {minutos}m'
 
+# Função para converter minutos em formato HH:MM
+def converte_minutos_para_hh_mm(minutos):
+    horas = minutos // 60
+    minutos = minutos % 60
+    return f'{int(horas):02d}:{int(minutos):02d}'
+
 # Função para calcular o total de horas trabalhadas
 def calcular_total_horas_trabalhadas(coluna_hora_trabalhada):
     """
