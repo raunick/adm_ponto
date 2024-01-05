@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime,timedelta
 
 # Carregar o DataFrame a partir do arquivo CSV
 df = pd.read_csv('data.csv')
@@ -50,42 +50,53 @@ def calcular_periodo_almoco(almoco_entrada, almoco_saida):
 # Função para calcular as horas trabalhadas
 def calcular_horas_trabalhadas(df_row):
     """
-    Calcula o total de horas trabalhadas.
+    Calcula o total de horas trabalhadas no formato HH:MM:SS.
     """
     if pd.isnull(df_row['Relação de Horas Manhã']) or pd.isnull(df_row['Relação de Horas Tarde']) or pd.isnull(df_row['Relação de Horas Almoço']):
         return ''
-    else:
-        manha = pd.to_timedelta(df_row['Relação de Horas Manhã'])
-        almoco = pd.to_timedelta(df_row['Relação de Horas Almoço'])
-        tarde = pd.to_timedelta(df_row['Relação de Horas Tarde'])
-        total_horas_trabalhadas = manha + tarde + almoco
-        delta = pd.to_timedelta(total_horas_trabalhadas)
-        delta_datetime = datetime(1, 1, 1) + delta
-        formato = "%H:%M:%S"
-        total_horas_trabalhadas_formatado = delta_datetime.strftime(formato)
-        return str(total_horas_trabalhadas_formatado)
 
-# Função para calcular o banco de horas
+    def calcular_intervalo(dia_semana, manha, tarde):
+        horario_almoco = timedelta(hours=1)
+        if dia_semana in ['Domingo', 'Sábado', 'Feriado']:
+            total_horas = timedelta(hours=0)
+        else:
+            total_horas = manha + tarde + horario_almoco 
+        return total_horas
+
+    manha = pd.to_timedelta(df_row['Relação de Horas Manhã'])
+    tarde = pd.to_timedelta(df_row['Relação de Horas Tarde'])
+
+    total_horas_trabalhadas = calcular_intervalo(df_row['Dia da Semana'], manha, tarde)
+    total_horas_formatado = str(total_horas_trabalhadas).split()[-1]  # Extrai apenas HH:MM:SS
+    return total_horas_formatado
+
+# Sua função existente
 def calcular_banco_de_horas(df_row):
     """
     Calcula o banco de horas para cada dia.
     """
     if pd.isnull(df_row['Horas Trabalhadas']):
-        return '', ''
+        return pd.to_timedelta('0:00:00')  # Retorna um Timedelta zero se as horas trabalhadas forem nulas
     else:
         total_horas_trabalhadas = pd.to_timedelta(df_row['Horas Trabalhadas'])
         if pd.to_datetime(df_row['Data']).weekday() == 4:
-            jornada_diaria = pd.to_timedelta('7:00:00')
+            jornada_diaria = pd.to_timedelta('9:00:00')
         elif pd.to_datetime(df_row['Data']).weekday() == 5:
             jornada_diaria = pd.to_timedelta('00:00:00')
         elif pd.to_datetime(df_row['Data']).weekday() == 6:
             jornada_diaria = pd.to_timedelta('00:00:00')
+        elif df_row['Dia da Semana'] == 'Feriado':
+            jornada_diaria = pd.to_timedelta('00:00:00')
         else:
-            jornada_diaria = pd.to_timedelta('8:00:00')
-        banco_de_horas_timedelta = total_horas_trabalhadas - jornada_diaria
-        horas = int(banco_de_horas_timedelta.total_seconds() // 3600)
-        minutos = int((banco_de_horas_timedelta.total_seconds() % 3600) // 60)
-        return f'{horas}:{minutos}'
+            jornada_diaria = pd.to_timedelta('10:00:00')
+        horas_extra = total_horas_trabalhadas.total_seconds() - jornada_diaria.total_seconds()
+        return horas_extra / 60
+
+# Função para converter minutos em formato HH:MM
+def converte_minutos_para_hh_mm(minutos):
+    horas = minutos // 60
+    minutos = minutos % 60
+    return f'{int(horas):02d}:{int(minutos):02d}'
 
 # Função para calcular o total de horas trabalhadas
 def calcular_total_horas_banco(coluna_horas):
@@ -102,24 +113,7 @@ def calcular_total_horas_banco(coluna_horas):
     horas = int(total_horas_trabalhadas.total_seconds() // 3600)
     minutos = int((total_horas_trabalhadas.total_seconds() % 3600) // 60)
 
-    return f'{horas}h{minutos}m'
-
-# Função para calcular as horas positivas
-def calcular_horas_positivas(coluna_horas):
-    """
-    Calcula e imprime as horas positivas.
-    """
-    total_horas_trabalhadas = pd.to_timedelta('00:00:00')
-
-    for horas_str in coluna_horas:
-        if pd.notnull(horas_str):
-            horas, minutos = map(int, horas_str.split(':'))
-            total_horas_trabalhadas += pd.to_timedelta(f'{horas}:{minutos}:00')
-
-    horas = int(total_horas_trabalhadas.total_seconds() // 3600)
-    minutos = int((total_horas_trabalhadas.total_seconds() % 3600) // 60)
-
-    print(f'{horas}:{minutos}')
+    return f'{horas}h {minutos}m'
 
 # Função para calcular o total de horas trabalhadas
 def calcular_total_horas_trabalhadas(coluna_hora_trabalhada):
@@ -130,30 +124,8 @@ def calcular_total_horas_trabalhadas(coluna_hora_trabalhada):
     total_horas = coluna_hora_trabalhada.sum()
     horas = int(total_horas.total_seconds() // 3600)
     minutos = int((total_horas.total_seconds() % 3600) // 60)
-    return f'{horas}h{minutos}m'
+    return f'{horas}h {minutos}m'
 
-# Calcular e adicionar colunas ao DataFrame
-df['Relação de Horas Manhã'] = df.apply(lambda row: calcular_periodo_manha(row['Entrada'], row['Almoço Saída']), axis=1)
-df['Relação de Horas Tarde'] = df.apply(lambda row: calcular_periodo_tarde(row['Almoço Entrada'], row['Saída']), axis=1)
-df['Relação de Horas Almoço'] = df.apply(lambda row: calcular_periodo_almoco(row['Almoço Entrada'], row['Almoço Saída']), axis=1)
-df['Horas Trabalhadas'] = df.apply(calcular_horas_trabalhadas, axis=1)
-df['Banco de Horas'] = df.apply(calcular_banco_de_horas, axis=1)
-
-# Selecionar as colunas relevantes para a exibição no Streamlit
-relacao_horas_dias = df[['Data', 'Entrada', 'Almoço Saída', 'Almoço Entrada', 'Saída', 'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Horas Trabalhadas', 'Banco de Horas']]
-
-# Exibir a tabela resultante no Streamlit
-# st.table(df[['Data', 'Entrada', 'Almoço Saída', 'Almoço Entrada', 'Saída', 'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Horas Trabalhadas', 'Banco de Horas']])
-
-# Card com o dia de maior banco de horas
-dia_max_banco_horas = df.loc[df['Banco de Horas'].idxmax()]
-
-# Card com o dia de menor banco de horas usando st.metric
-dia_min_banco_horas = df.loc[df['Banco de Horas'].idxmin()]
-
-# Calcular o total de horas no banco de horas e de trabalho
-horas_totais_banco = calcular_total_horas_banco(df['Banco de Horas'])
-horas_totais_trabalho = calcular_total_horas_trabalhadas(df['Horas Trabalhadas'])
 # Layout do Streamlit
 st.title('Relatório de Ponto')
 
@@ -170,19 +142,15 @@ if uploaded_file is not None:
     df['Relação de Horas Tarde'] = df.apply(lambda row: calcular_periodo_tarde(row['Almoço Entrada'], row['Saída']), axis=1)
     df['Relação de Horas Almoço'] = df.apply(lambda row: calcular_periodo_almoco(row['Almoço Entrada'], row['Almoço Saída']), axis=1)
     df['Horas Trabalhadas'] = df.apply(calcular_horas_trabalhadas, axis=1)
-    df['Banco de Horas'] = df.apply(calcular_banco_de_horas, axis=1)
+    df['Banco de Horas'] = df.apply(lambda row: converte_minutos_para_hh_mm(calcular_banco_de_horas(row)), axis=1)
+
 
     # Selecionar as colunas relevantes para a exibição no Streamlit
-    relacao_horas_dias = df[['Data', 'Entrada', 'Almoço Saída', 'Almoço Entrada', 'Saída', 'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Horas Trabalhadas', 'Banco de Horas']]
+    relacao_horas_dias = df[['Data', 'Dia da Semana','Entrada', 'Almoço Saída', 'Almoço Entrada', 'Saída', 'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Horas Trabalhadas', 'Banco de Horas']]
 
     # Exibir a tabela resultante no Streamlit
-    st.dataframe(df[['Data', 'Entrada', 'Almoço Saída', 'Almoço Entrada', 'Saída', 'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Horas Trabalhadas', 'Banco de Horas']])
+    st.dataframe(relacao_horas_dias)
 
-    # Card com o dia de maior banco de horas
-    dia_max_banco_horas = df.loc[df['Banco de Horas'].idxmax()]
-
-    # Card com o dia de menor banco de horas usando st.metric
-    dia_min_banco_horas = df.loc[df['Banco de Horas'].idxmin()]
 
     # Calcular o total de horas no banco de horas e de trabalho
     horas_totais_banco = calcular_total_horas_banco(df['Banco de Horas'])
