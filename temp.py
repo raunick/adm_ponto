@@ -123,7 +123,7 @@ def calcular_total_horas_trabalhadas(coluna_hora_trabalhada):
     return f'{horas}h {minutos}m'
 
 # Layout do Streamlit
-st.title('Relatório de Ponto')
+st.title('🕐 Relatório de Ponto 🕐')
 
 # Botão de upload para carregar um arquivo CSV
 uploaded_file = st.file_uploader("Escolha um arquivo CSV", type=["csv"])

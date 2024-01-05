@@ -4,12 +4,6 @@ from datetime import datetime,timedelta
 
 # Carregar o DataFrame a partir do arquivo CSV
 df = pd.read_csv('data.csv')
-st.title('Segue modelo de tabela')
-# Boolean to resize the dataframe, stored as a session state variable
-st.checkbox("expandir", value=True, key="use_container_width")
-# Exibir o DataFrame como uma tabela no Streamlit
-st.dataframe(df,use_container_width=st.session_state.use_container_width)
-st.write('Faça o download da tabela.')
 
 # Função para calcular o período da manhã
 def calcular_periodo_manha(entrada, almoco_saida):
@@ -70,11 +64,8 @@ def calcular_horas_trabalhadas(df_row):
     total_horas_formatado = str(total_horas_trabalhadas).split()[-1]  # Extrai apenas HH:MM:SS
     return total_horas_formatado
 
-# Sua função existente
+# Função para calcular o banco de horas para cada dia.
 def calcular_banco_de_horas(df_row):
-    """
-    Calcula o banco de horas para cada dia.
-    """
     if pd.isnull(df_row['Horas Trabalhadas']):
         return pd.to_timedelta('0:00:00')  # Retorna um Timedelta zero se as horas trabalhadas forem nulas
     else:
@@ -93,6 +84,7 @@ def calcular_banco_de_horas(df_row):
             jornada_diaria = pd.to_timedelta('10:00:00')
         horas_extra = total_horas_trabalhadas.total_seconds() - jornada_diaria.total_seconds()
         return horas_extra / 60
+    
 
 # Função para converter minutos em formato HH:MM
 def converte_minutos_para_hh_mm(minutos):
@@ -122,17 +114,24 @@ def calcular_total_horas_trabalhadas(coluna_hora_trabalhada):
     """
     Calcula o total de horas trabalhadas.
     """
-    coluna_hora_trabalhada = pd.to_timedelta(df['Horas Trabalhadas'])
+    coluna_hora_trabalhada = pd.to_timedelta(coluna_hora_trabalhada)
     total_horas = coluna_hora_trabalhada.sum()
     horas = int(total_horas.total_seconds() // 3600)
     minutos = int((total_horas.total_seconds() % 3600) // 60)
     return f'{horas}h {minutos}m'
 
+st.title('Segue modelo de tabela 📋')
+# Boolean to resize the dataframe, stored as a session state variable
+st.checkbox("expandir", value=True, key="use_container_width")
+# Exibir o DataFrame como uma tabela no Streamlit
+st.dataframe(df, use_container_width = st.session_state.use_container_width)
+st.write('Faça o download da tabela.💻')
+
 # Layout do Streamlit
-st.title('Relatório de Ponto')
+st.title('Relatório de Ponto 🕐')
 
 # Botão de upload para carregar um arquivo CSV
-uploaded_file = st.file_uploader("Escolha um arquivo CSV", type=["csv"])
+uploaded_file = st.file_uploader("Escolha um arquivo CSV 📄", type=["csv"])
 
 # Se um arquivo CSV for carregado, processá-lo
 if uploaded_file is not None:
@@ -145,7 +144,7 @@ if uploaded_file is not None:
     df['Relação de Horas Almoço'] = df.apply(lambda row: calcular_periodo_almoco(row['Almoço Entrada'], row['Almoço Saída']), axis=1)
     df['Horas Trabalhadas'] = df.apply(calcular_horas_trabalhadas, axis=1)
     df['Banco de Horas'] = df.apply(lambda row: converte_minutos_para_hh_mm(calcular_banco_de_horas(row)), axis=1)
-
+    df['Banco de Minutos'] = df.apply(calcular_banco_de_horas, axis=1)
 
     # Selecionar as colunas relevantes para a exibição no Streamlit
     relacao_horas_dias = df[['Data', 'Dia da Semana','Entrada', 'Almoço Saída', 'Almoço Entrada', 'Saída', 'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Horas Trabalhadas', 'Banco de Horas']]
@@ -166,5 +165,5 @@ if uploaded_file is not None:
     col2.metric("Total de horas banco", f'{horas_totais_banco}')
 
     # Exibir um gráfico de linha no Streamlit
-    st.write('## Relação de Horas pelos Dias:')
-    st.line_chart(df.set_index('Data')[['Banco de Horas']])
+    st.write('## Relação de minutos pelos Dias:')
+    st.line_chart(df.set_index('Data')[['Banco de Minutos']])
