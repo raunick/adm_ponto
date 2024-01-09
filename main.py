@@ -145,7 +145,7 @@ if uploaded_file is not None:
     df['Banco de Minutos'] = df.apply(calcular_banco_de_horas, axis=1)
 
     # Selecionar as colunas relevantes para a exibição no Streamlit
-    relacao_horas_dias = df[['Data', 'Dia da Semana','Entrada', 'Almoço Saída', 'Almoço Entrada', 'Saída', 'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Horas Trabalhadas', 'Banco de Horas']]
+    relacao_horas_dias = df[['Data', 'Dia da Semana','Entrada', 'Almoço Saída', 'Almoço Entrada', 'Saída', 'Relação de Horas Manhã', 'Relação de Horas Tarde', 'Relação de Horas Almoço', 'Horas Trabalhadas', 'Banco de Horas','Banco de Minutos']]
 
     # Exibir a tabela resultante no Streamlit
     st.data_editor(relacao_horas_dias)
